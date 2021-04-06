@@ -36,7 +36,7 @@ namespace TodoistDaysRemaining.Functions
                 .Where(p => todoistProjectsToTraverse.Contains(p.Name.ToLower()))
                 .Select(p => p.Id)
                 .ToList();
-            log.LogInformation($"Found projects from todoist: {string.Join(", ", tdiProjectIds)}");
+            log.LogInformation($"Found count of projects from todoist: {tdiProjectIds.Count()}");
 
             IEnumerable<Item>? tdiAllItems = await client.Items.GetAsync();
             var tdiItemsToProcess = tdiAllItems.Where(i => tdiProjectIds.Contains(i.ProjectId ?? 0)).ToList();
