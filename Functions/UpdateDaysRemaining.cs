@@ -14,11 +14,7 @@ namespace TodoistDaysRemaining.Functions
     {
         [FunctionName("UpdateDaysRemaining")]
         public static async Task RunAsync(
-            [TimerTrigger("0 */5 7-23 * * *",
-            #if DEBUG
-                RunOnStartup =true
-	        #endif
-            )] TimerInfo myTimer,
+            [TimerTrigger("0 */5 7-23 * * *")] TimerInfo myTimer,
             ILogger log)
         {
             // get list of projects from environment variable
