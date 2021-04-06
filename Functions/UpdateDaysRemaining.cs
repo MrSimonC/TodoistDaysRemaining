@@ -14,13 +14,19 @@ namespace TodoistDaysRemaining.Functions
     {
         [FunctionName("UpdateDaysRemaining")]
         public static async Task RunAsync(
-            [TimerTrigger("0 0 6-23 * * *")] TimerInfo myTimer,
+            [TimerTrigger("0 0 6-23 * * *"
+            #if DEBUG
+                , RunOnStartup =true
+	        #endif
+            )] TimerInfo myTimer,
             ILogger log)
         {
+            log.LogInformation("Function code running");
             // get list of projects from environment variable
             string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
             var todoistProjectsToTraverse = projectsEnvVar.Split(",").ToList();
             todoistProjectsToTraverse.ForEach(p => p?.ToLower().Trim());
+            log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
 
             // get project Ids from todoist of projects to traverse
             ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY"));
@@ -30,15 +36,19 @@ namespace TodoistDaysRemaining.Functions
                 .Where(p => todoistProjectsToTraverse.Contains(p.Name.ToLower()))
                 .Select(p => p.Id)
                 .ToList();
+            log.LogInformation($"Found projects from todoist: {string.Join(", ", tdiProjectIds)}");
 
             IEnumerable<Item>? tdiAllItems = await client.Items.GetAsync();
             var tdiItemsToProcess = tdiAllItems.Where(i => tdiProjectIds.Contains(i.ProjectId ?? 0)).ToList();
+            log.LogInformation($"Found {tdiItemsToProcess.Count} items to process");
 
             // traverse each item for existing Regex
             string regex = @"\ +\[+\d+\/*\d*\ days\ remaining\]+";
             bool? workWeekOnly = WorkWeekOnly();
+            log.LogInformation($"WorkWeekOnly set to {workWeekOnly}");
             foreach (Item item in tdiItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
             {
+                log.LogInformation($"Looking at item: {item.Content}");
                 DateTime dueDate = item.DueDate.Date ?? throw new NullReferenceException($"Date is found null on item with id {item.Id}");
                 (int days, int workDays) = CalculateDays(dueDate);
                 string daysDisplay = workWeekOnly switch
@@ -76,8 +86,13 @@ namespace TodoistDaysRemaining.Functions
 
                 // item.DueDate.StringDate (ironically inaccessible) seems to hold item.DueDate.Date in UTC, which overrides item.DueDate.Date
                 // which when in BST changes the due date back to the day before (at 11pm). Therefore override this by creating a new instance.
-                item.DueDate = new DueDate(item.DueDate.Date.Value.ToString("yyyy-MM-dd"), null, item.DueDate.Language);
+                string dueDateString = item.DueDate.Date.Value.ToString("yyyy-MM-dd");
+                item.DueDate = new DueDate(dueDateString, null, item.DueDate.Language);
+#if DEBUG
+                Console.WriteLine($"{item.Content} with due date: {dueDateString}");
+#else
                 await client.Items.UpdateAsync(item);
+#endif
             }
 
 
