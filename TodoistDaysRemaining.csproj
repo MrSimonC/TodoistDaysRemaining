@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="TodoistDaysRemainingTests\**" />
+    <EmbeddedResource Remove="TodoistDaysRemainingTests\**" />
+    <None Remove="TodoistDaysRemainingTests\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
     <PackageReference Include="Todoist.Net" Version="2.1.1" />
   </ItemGroup>
