@@ -55,7 +55,7 @@ namespace TodoistDaysRemaining.Functions
                 {
                     true => workDays.ToString(),
                     false => days.ToString(),
-                    _ => $"{workDays}/{days}"
+                    _ => $"{days}/{workDays}"
                 };
                 string update = $" [{daysDisplay} days remaining]";
 
