@@ -22,31 +22,18 @@ namespace TodoistDaysRemaining.Functions
             ILogger log)
         {
             log.LogInformation("Function code running");
-            // get list of projects from environment variable
-            string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
-            var todoistProjectsToTraverse = projectsEnvVar.Split(",").ToList();
-            todoistProjectsToTraverse.ForEach(p => p?.ToLower().Trim());
-            log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
-
-            // get project Ids from todoist of projects to traverse
             ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY"));
-            IEnumerable<Project>? tdiProjects = await client.Projects.GetAsync();
-            var tdiProjectIds = tdiProjects
-                .Where(p => !string.IsNullOrEmpty(p.Name))
-                .Where(p => todoistProjectsToTraverse.Contains(p.Name.ToLower()))
-                .Select(p => p.Id)
-                .ToList();
-            log.LogInformation($"Found count of projects from todoist: {tdiProjectIds.Count()}");
 
-            IEnumerable<Item>? tdiAllItems = await client.Items.GetAsync();
-            var tdiItemsToProcess = tdiAllItems.Where(i => tdiProjectIds.Contains(i.ProjectId ?? 0)).ToList();
-            log.LogInformation($"Found {tdiItemsToProcess.Count} items to process");
+            List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
+            List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
+            List<Item> todoistItemsToProcess = await GetTodoistProjectItems(log, client, todoistProjectIds);
 
             // traverse each item for existing Regex
             string regex = @"\ +\[+\d+\/*\d*\ days\ remaining\]+";
-            bool? workWeekOnly = WorkWeekOnly();
+            bool? workWeekOnly = GetWorkWeekOnlyFromConfig();
             log.LogInformation($"WorkWeekOnly set to {workWeekOnly}");
-            foreach (Item item in tdiItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
+
+            foreach (Item item in todoistItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
             {
                 log.LogInformation($"Looking at item: {item.Content}");
                 DateTime dueDate = item.DueDate.Date ?? throw new NullReferenceException($"Date is found null on item with id {item.Id}");
@@ -57,22 +44,7 @@ namespace TodoistDaysRemaining.Functions
                     false => days.ToString(),
                     _ => $"{days}/{workDays}"
                 };
-                string update = $" [{daysDisplay} days remaining]";
-
-                if (workWeekOnly ?? true)
-                {
-                    if (workDays <= 0)
-                    {
-                        update = string.Empty;
-                    }
-                }
-                else
-                {
-                    if (days <= 0)
-                    {
-                        update = string.Empty;
-                    }
-                }
+                string update = GetUpdateText(workWeekOnly, days, workDays, daysDisplay);
                 log.LogInformation($"{item.Content}, now: {DateTime.Now.Date} to due date: {item.DueDate.Date} is {days}/{workDays}");
                 if (Regex.IsMatch(item.Content, regex))
                 {
@@ -95,8 +67,58 @@ namespace TodoistDaysRemaining.Functions
 #endif
             }
 
-
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+        }
+
+        private static string GetUpdateText(bool? workWeekOnly, int days, int workDays, string daysDisplay)
+        {
+            string update = $" [{daysDisplay} days remaining]";
+
+            if (workWeekOnly ?? true)
+            {
+                if (workDays <= 0)
+                {
+                    update = string.Empty;
+                }
+            }
+            else
+            {
+                if (days <= 0)
+                {
+                    update = string.Empty;
+                }
+            }
+
+            return update;
+        }
+
+        private static async Task<List<Item>> GetTodoistProjectItems(ILogger log, ITodoistClient client, List<ComplexId> tdiProjectIds)
+        {
+            IEnumerable<Item>? tdiAllItems = await client.Items.GetAsync();
+            var tdiItemsToProcess = tdiAllItems.Where(i => tdiProjectIds.Contains(i.ProjectId ?? 0)).ToList();
+            log.LogInformation($"Found {tdiItemsToProcess.Count} items to process");
+            return tdiItemsToProcess;
+        }
+
+        private static async Task<List<ComplexId>> GetTodoistProjectIds(ILogger log, List<string> todoistProjectsToTraverse, ITodoistClient client)
+        {
+            IEnumerable<Project>? tdiProjects = await client.Projects.GetAsync();
+            var tdiProjectIds = tdiProjects
+                .Where(p => !string.IsNullOrEmpty(p.Name))
+                .Where(p => todoistProjectsToTraverse.Contains(p.Name.ToLower()))
+                .Select(p => p.Id)
+                .ToList();
+            log.LogInformation($"Found count of projects from todoist: {tdiProjectIds.Count()}");
+            return tdiProjectIds;
+        }
+
+        private static List<string> GetListOfProjectsFromConfig(ILogger log)
+        {
+            string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
+            var todoistProjectsToTraverse = projectsEnvVar.Split(",").ToList();
+            todoistProjectsToTraverse.ForEach(p => p?.ToLower().Trim());
+            log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
+            return todoistProjectsToTraverse;
         }
 
         /// <summary>
@@ -124,7 +146,7 @@ namespace TodoistDaysRemaining.Functions
         /// See if we want to only count work days. If null, then include both all days and work days.
         /// </summary>
         /// <returns>true=yes workdays only, false=all days, null=show both</returns>
-        private static bool? WorkWeekOnly()
+        private static bool? GetWorkWeekOnlyFromConfig()
         {
             string? workWeekEnv = Environment.GetEnvironmentVariable("WORKWEEK");
             if (workWeekEnv is null)
