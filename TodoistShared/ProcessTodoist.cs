@@ -1,5 +1,4 @@
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,20 +7,15 @@ using System.Threading.Tasks;
 using Todoist.Net;
 using Todoist.Net.Models;
 
-namespace TodoistDaysRemaining.Functions
+namespace TodoistShared
 {
-    public static class UpdateDaysRemaining
+    /// <summary>
+    /// Process todolist items. Needed env vars: TODOIST_APIKEY, PROJECTS, WORKWEEK (optional)
+    /// </summary>
+    public class ProcessTodoist
     {
-        [FunctionName("UpdateDaysRemaining")]
-        public static async Task RunAsync(
-            [TimerTrigger("0 0 6-23 * * *"
-            #if DEBUG
-                , RunOnStartup =true
-	        #endif
-            )] TimerInfo myTimer,
-            ILogger log)
+        public static async Task ProcessTodoistAsync(ILogger log)
         {
-            log.LogInformation("Function code running");
             ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY"));
 
             List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
@@ -66,8 +60,6 @@ namespace TodoistDaysRemaining.Functions
                 await client.Items.UpdateAsync(item);
 #endif
             }
-
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
 
         private static string GetUpdateText(bool? workWeekOnly, int days, int workDays, string daysDisplay)
