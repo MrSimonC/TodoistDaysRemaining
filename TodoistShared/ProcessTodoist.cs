@@ -55,8 +55,9 @@ namespace TodoistShared
                 string dueDateString = item.DueDate.Date.Value.ToString("yyyy-MM-dd");
                 item.DueDate = new DueDate(dueDateString, null, item.DueDate.Language);
 #if DEBUG
-                Console.WriteLine($"{item.Content} with due date: {dueDateString}");
+                log.LogInformation($"{item.Content} with due date: {dueDateString}");
 #else
+                log.LogInformation("Writing to Todoist");
                 await client.Items.UpdateAsync(item);
 #endif
             }

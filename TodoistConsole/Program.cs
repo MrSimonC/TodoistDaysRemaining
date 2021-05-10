@@ -12,16 +12,13 @@ namespace TodoistConsole
         {
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
-
             ServiceProvider? serviceProvider = serviceCollection.BuildServiceProvider();
             ILogger<Program>? log = serviceProvider.GetService<ILogger<Program>>();
 
-
-            Console.WriteLine("code running");
+            log.LogInformation($"C# Timer console app executed at: {DateTime.Now}");
             await ProcessTodoist.ProcessTodoistAsync(log);
-            Console.WriteLine("code running");
+            log.LogInformation("Process finished");
 
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
 
         private static void ConfigureServices(IServiceCollection services)
