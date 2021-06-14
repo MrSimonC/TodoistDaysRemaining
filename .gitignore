@@ -267,3 +267,4 @@ __pycache__/
 .vscode/tasks.json
 .gitignore
 .vscode/settings.json
+.DS_Store
