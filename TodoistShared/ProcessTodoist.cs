@@ -16,7 +16,7 @@ namespace TodoistShared
     {
         public static async Task ProcessTodoistAsync(ILogger log)
         {
-            ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY"));
+            ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable"));
 
             List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
             List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
