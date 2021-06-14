@@ -23,7 +23,7 @@ namespace TodoistShared
             List<Item> todoistItemsToProcess = await GetTodoistProjectItems(log, client, todoistProjectIds);
 
             // traverse each item for existing Regex
-            string regex = @"\ +\[+\d+\/*\d*\ days\ remaining\]+";
+            string regex = @"\ +\[+(\d+)\/*\d*\ days\ remaining\]+";
             bool? workWeekOnly = GetWorkWeekOnlyFromConfig();
             log.LogInformation($"WorkWeekOnly set to {workWeekOnly}");
 
@@ -32,6 +32,30 @@ namespace TodoistShared
                 log.LogInformation($"Looking at item: {item.Content}");
                 DateTime dueDate = item.DueDate.Date ?? throw new NullReferenceException($"Date is found null on item with id {item.Id}");
                 (int days, int workDays) = CalculateDays(dueDate);
+                log.LogInformation($"Found days: {days}/{workDays}");
+
+                // skip hitting the API to update entry which needs no update
+                if (Regex.IsMatch(item.Content, regex))
+                {
+                    try
+                    {
+                        Match m = Regex.Match(item.Content, regex);
+                        int.TryParse(m.Groups[1]?.Value, out int existingDays); // ...[12/34 or ...[12..
+                        int calculatedDays = (workWeekOnly ?? false) ? workDays : days;
+                        log.LogInformation($"Checking existing entries for changes. Comparing existing {existingDays} days to calculated {calculatedDays} days");
+                        if (existingDays == calculatedDays)
+                        {
+                            log.LogInformation($"Skipping entry as days don't need update. Entry is: {item.Content}");
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.LogError(ex, $"Error when traversing existing entry day with content: {item.Content}");
+                        continue;
+                    }
+                }
+
                 string daysDisplay = workWeekOnly switch
                 {
                     true => workDays.ToString(),
