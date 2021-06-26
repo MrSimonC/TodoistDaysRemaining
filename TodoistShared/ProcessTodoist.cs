@@ -1,5 +1,4 @@
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,28 +7,23 @@ using System.Threading.Tasks;
 using Todoist.Net;
 using Todoist.Net.Models;
 
-namespace TodoistDaysRemaining.Functions
+namespace TodoistShared
 {
-    public static class UpdateDaysRemaining
+    /// <summary>
+    /// Process todolist items. Needed env vars: TODOIST_APIKEY, PROJECTS, WORKWEEK (optional)
+    /// </summary>
+    public class ProcessTodoist
     {
-        [FunctionName("UpdateDaysRemaining")]
-        public static async Task RunAsync(
-            [TimerTrigger("0 0 6-23 * * *"
-            #if DEBUG
-                , RunOnStartup =true
-	        #endif
-            )] TimerInfo myTimer,
-            ILogger log)
+        public static async Task ProcessTodoistAsync(ILogger log)
         {
-            log.LogInformation("Function code running");
-            ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY"));
+            ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable"));
 
             List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
             List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
             List<Item> todoistItemsToProcess = await GetTodoistProjectItems(log, client, todoistProjectIds);
 
             // traverse each item for existing Regex
-            string regex = @"\ +\[+\d+\/*\d*\ days\ remaining\]+";
+            string regex = @"\ +\[+(\d+)\/*\d*\ days\ remaining\]+";
             bool? workWeekOnly = GetWorkWeekOnlyFromConfig();
             log.LogInformation($"WorkWeekOnly set to {workWeekOnly}");
 
@@ -38,6 +32,30 @@ namespace TodoistDaysRemaining.Functions
                 log.LogInformation($"Looking at item: {item.Content}");
                 DateTime dueDate = item.DueDate.Date ?? throw new NullReferenceException($"Date is found null on item with id {item.Id}");
                 (int days, int workDays) = CalculateDays(dueDate);
+                log.LogInformation($"Found days: {days}/{workDays}");
+
+                // skip hitting the API to update entry which needs no update
+                if (Regex.IsMatch(item.Content, regex))
+                {
+                    try
+                    {
+                        Match m = Regex.Match(item.Content, regex);
+                        int.TryParse(m.Groups[1]?.Value, out int existingDays); // ...[12/34 or ...[12..
+                        int calculatedDays = (workWeekOnly ?? false) ? workDays : days;
+                        log.LogInformation($"Checking existing entries for changes. Comparing existing {existingDays} days to calculated {calculatedDays} days");
+                        if (existingDays == calculatedDays)
+                        {
+                            log.LogInformation($"Skipping entry as days don't need update. Entry is: {item.Content}");
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.LogError(ex, $"Error when traversing existing entry day with content: {item.Content}");
+                        continue;
+                    }
+                }
+
                 string daysDisplay = workWeekOnly switch
                 {
                     true => workDays.ToString(),
@@ -61,13 +79,12 @@ namespace TodoistDaysRemaining.Functions
                 string dueDateString = item.DueDate.Date.Value.ToString("yyyy-MM-dd");
                 item.DueDate = new DueDate(dueDateString, null, item.DueDate.Language);
 #if DEBUG
-                Console.WriteLine($"{item.Content} with due date: {dueDateString}");
+                log.LogInformation($"{item.Content} with due date: {dueDateString}");
 #else
+                log.LogInformation("Writing to Todoist");
                 await client.Items.UpdateAsync(item);
 #endif
             }
-
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
 
         private static string GetUpdateText(bool? workWeekOnly, int days, int workDays, string daysDisplay)
@@ -115,8 +132,11 @@ namespace TodoistDaysRemaining.Functions
         private static List<string> GetListOfProjectsFromConfig(ILogger log)
         {
             string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
-            var todoistProjectsToTraverse = projectsEnvVar.Split(",").ToList();
-            todoistProjectsToTraverse.ForEach(p => p?.ToLower().Trim());
+            List<string> todoistProjectsToTraverse = projectsEnvVar
+                .Split(",")
+                .Where(p=>!string.IsNullOrEmpty(p))
+                .Select(p => p.Trim().ToLowerInvariant())
+                .ToList();
             log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
             return todoistProjectsToTraverse;
         }
