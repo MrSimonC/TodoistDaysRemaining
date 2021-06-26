@@ -17,8 +17,9 @@ namespace TodoistFunctions.Todoist
         public static async Task ProcessTodoistAsync(ILogger log)
         {
             ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable"));
-            const  string forceWriteOnceEnvVarName = "FORCE_WRITE_ONCE";
-            bool forceWrite = GetBoolFromEnvVar(forceWriteOnceEnvVarName) ?? false; 
+            // Force writing to all todoist entries (change from true to false directly in Portal > Configuration since SetEnvironmentVariable won't work in Azure Functions
+            const string forceWriteOnceEnvVarName = "FORCE_WRITE_ONCE";
+            bool forceWrite = GetBoolFromEnvVar(forceWriteOnceEnvVarName) ?? false;
 
             List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
             List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
@@ -93,10 +94,6 @@ namespace TodoistFunctions.Todoist
                 log.LogInformation("Writing to Todoist");
                 await client.Items.UpdateAsync(item);
 #endif
-                if (forceWrite)
-                {
-                    Environment.SetEnvironmentVariable(forceWriteOnceEnvVarName, "false");
-                }
             }
         }
 
