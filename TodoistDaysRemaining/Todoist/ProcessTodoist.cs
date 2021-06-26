@@ -101,19 +101,21 @@ namespace TodoistFunctions.Todoist
         {
             string update = $" [{daysDisplay} days remaining]";
 
-            if (workWeekOnly ?? true)
+            switch (workWeekOnly) // days will always be bigger than workdays, so only blank string on days consideration if workWeekOnly == null
             {
-                if (workDays <= 0)
-                {
-                    update = string.Empty;
-                }
-            }
-            else
-            {
-                if (days <= 0)
-                {
-                    update = string.Empty;
-                }
+                case null:
+                case false:
+                    if (days <= 0)
+                    {
+                        update = string.Empty;
+                    }
+                    break;
+                default:
+                    if (workDays <= 0)
+                    {
+                        update = string.Empty;
+                    }
+                    break;
             }
 
             return update;
