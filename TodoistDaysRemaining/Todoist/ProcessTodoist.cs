@@ -17,6 +17,8 @@ namespace TodoistFunctions.Todoist
         public static async Task ProcessTodoistAsync(ILogger log)
         {
             ITodoistClient client = new TodoistClient(Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable"));
+            const  string forceWriteOnceEnvVarName = "FORCE_WRITE_ONCE";
+            bool forceWrite = GetBoolFromEnvVar(forceWriteOnceEnvVarName) ?? false; 
 
             List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
             List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
@@ -24,7 +26,9 @@ namespace TodoistFunctions.Todoist
 
             // traverse each item for existing Regex
             string regex = @"\ +\[+(\d+)\/*\d*\ days\ remaining\]+";
-            bool? workWeekOnly = GetWorkWeekOnlyFromConfig();
+            // See if we want to only count work days. If null, then include both all days and work days.
+            // true=yes workdays only, false=all days, null=show both
+            bool? workWeekOnly = GetBoolFromEnvVar("WORKWEEK");
             log.LogInformation($"WorkWeekOnly set to {workWeekOnly}");
 
             foreach (Item item in todoistItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
@@ -48,7 +52,7 @@ namespace TodoistFunctions.Todoist
                         }
                         int calculatedDays = workWeekOnly ?? false ? workDays : days;
                         log.LogInformation($"Checking existing entries for changes. Comparing existing {existingDays} days to calculated {calculatedDays} days");
-                        if (existingDays == calculatedDays)
+                        if ((existingDays == calculatedDays) && !forceWrite)
                         {
                             log.LogInformation($"Skipping entry as days don't need update. Entry is: {item.Content}");
                             continue;
@@ -89,6 +93,10 @@ namespace TodoistFunctions.Todoist
                 log.LogInformation("Writing to Todoist");
                 await client.Items.UpdateAsync(item);
 #endif
+                if (forceWrite)
+                {
+                    Environment.SetEnvironmentVariable(forceWriteOnceEnvVarName, "false");
+                }
             }
         }
 
@@ -168,17 +176,16 @@ namespace TodoistFunctions.Todoist
         }
 
         /// <summary>
-        /// See if we want to only count work days. If null, then include both all days and work days.
+        /// Get nullable bool from environment variable
         /// </summary>
-        /// <returns>true=yes workdays only, false=all days, null=show both</returns>
-        private static bool? GetWorkWeekOnlyFromConfig()
+        private static bool? GetBoolFromEnvVar(string envVarName)
         {
-            string? workWeekEnv = Environment.GetEnvironmentVariable("WORKWEEK");
-            if (workWeekEnv is null)
+            string? result = Environment.GetEnvironmentVariable(envVarName);
+            if (result is null)
             {
                 return null;
             }
-            bool.TryParse(workWeekEnv, out bool workWeek);
+            bool.TryParse(result, out bool workWeek);
             return workWeek;
         }
     }
