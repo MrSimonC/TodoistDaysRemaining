@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Todoist.Net;
 using Todoist.Net.Models;
 
-namespace TodoistShared
+namespace TodoistFunctions.Todoist
 {
     /// <summary>
     /// Process todolist items. Needed env vars: TODOIST_APIKEY, PROJECTS, WORKWEEK (optional)
@@ -40,8 +40,13 @@ namespace TodoistShared
                     try
                     {
                         Match m = Regex.Match(item.Content, regex);
-                        int.TryParse(m.Groups[1]?.Value, out int existingDays); // ...[12/34 or ...[12..
-                        int calculatedDays = (workWeekOnly ?? false) ? workDays : days;
+                        bool gotExistingDays = int.TryParse(m.Groups[1]?.Value, out int existingDays); // ...[12/34 or ...[12..
+                        if (!gotExistingDays)
+                        {
+                            log.LogWarning($"Couldn't parse the days out of existing entry {item.Content}");
+                            continue;
+                        }
+                        int calculatedDays = workWeekOnly ?? false ? workDays : days;
                         log.LogInformation($"Checking existing entries for changes. Comparing existing {existingDays} days to calculated {calculatedDays} days");
                         if (existingDays == calculatedDays)
                         {
@@ -134,7 +139,7 @@ namespace TodoistShared
             string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
             List<string> todoistProjectsToTraverse = projectsEnvVar
                 .Split(",")
-                .Where(p=>!string.IsNullOrEmpty(p))
+                .Where(p => !string.IsNullOrEmpty(p))
                 .Select(p => p.Trim().ToLowerInvariant())
                 .ToList();
             log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
@@ -155,7 +160,7 @@ namespace TodoistShared
 
             int days = (int)(date - DateTime.Now.Date).TotalDays;
             int workDays = Enumerable
-                .Range(1, days-1)  // days-1 since we don't want to count the final day if it's a workday
+                .Range(1, days - 1)  // days-1 since we don't want to count the final day if it's a workday
                 .Select(x => DateTime.Now.Date.AddDays(x))
                 .Count(x => x.DayOfWeek != System.DayOfWeek.Saturday && x.DayOfWeek != System.DayOfWeek.Sunday);
 
