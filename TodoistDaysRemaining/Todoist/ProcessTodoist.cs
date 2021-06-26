@@ -73,13 +73,16 @@ namespace TodoistFunctions.Todoist
                     _ => $"{days}/{workDays}"
                 };
                 string update = GetUpdateText(workWeekOnly, days, workDays, daysDisplay);
+                log.LogInformation($"{item.Content}: {nameof(GetUpdateText)} returned {update}");
                 log.LogInformation($"{item.Content}, now: {DateTime.Now.Date} to due date: {item.DueDate.Date} is {days}/{workDays}");
                 if (Regex.IsMatch(item.Content, regex))
                 {
+                    log.LogInformation("Regex was matched. Updating existing entry figures.");
                     item.Content = Regex.Replace(item.Content, regex, update);
                 }
                 else
                 {
+                    log.LogInformation("Regex was not matched. Updating entry with new text.");
                     item.Content += $"{update}";
                 }
                 log.LogInformation(item.Content);
@@ -101,7 +104,7 @@ namespace TodoistFunctions.Todoist
         {
             string update = $" [{daysDisplay} days remaining]";
 
-            if (!workWeekOnly ?? false) // days will always be bigger than workdays, so only blank string on days consideration if workWeekOnly == null
+            if (!(workWeekOnly ?? false)) // days will always be bigger than workdays, so only blank string on days consideration if workWeekOnly == null
             {
                 if (days <= 0)
                 {
