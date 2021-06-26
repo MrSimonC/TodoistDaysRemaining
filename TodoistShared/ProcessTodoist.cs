@@ -155,7 +155,7 @@ namespace TodoistShared
 
             int days = (int)(date - DateTime.Now.Date).TotalDays;
             int workDays = Enumerable
-                .Range(1, days)
+                .Range(1, days-1)  // days-1 since we don't want to count the final day if it's a workday
                 .Select(x => DateTime.Now.Date.AddDays(x))
                 .Count(x => x.DayOfWeek != System.DayOfWeek.Saturday && x.DayOfWeek != System.DayOfWeek.Sunday);
 
