@@ -132,8 +132,11 @@ namespace TodoistShared
         private static List<string> GetListOfProjectsFromConfig(ILogger log)
         {
             string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
-            var todoistProjectsToTraverse = projectsEnvVar.Split(",").ToList();
-            todoistProjectsToTraverse.ForEach(p => p?.ToLower().Trim());
+            List<string> todoistProjectsToTraverse = projectsEnvVar
+                .Split(",")
+                .Where(p=>!string.IsNullOrEmpty(p))
+                .Select(p => p.Trim().ToLowerInvariant())
+                .ToList();
             log.LogInformation($"Found projects from config: {string.Join(", ", todoistProjectsToTraverse)}");
             return todoistProjectsToTraverse;
         }
