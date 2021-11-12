@@ -7,7 +7,7 @@ env:
   AZURE_FUNCTIONAPP_NAME: TodoistDaysRemaining
   AZURE_FUNCTIONAPP_PACKAGE_PATH: TodoistDaysRemaining\published
   CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 3.1.x
+  DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: TodoistDaysRemaining
   DOTNET_CORE_VERSION_INPROC: ''
 jobs:
