@@ -1,25 +1,20 @@
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using TodoistFunctions.Todoist;
+namespace TodoistFunctions.Functions;
 
-namespace TodoistDaysRemaining.Functions
+public static class UpdateDaysRemaining
 {
-    public static class UpdateDaysRemaining
+#if DEBUG
+    const bool runOnStartUp = true;
+#else
+    const bool runOnStartUp = false;
+#endif
+
+    [FunctionName("UpdateDaysRemaining")]
+    public static async Task RunAsync(
+        [TimerTrigger("0 0 6-23 * * *", RunOnStartup = runOnStartUp)] TimerInfo myTimer,
+        ILogger log)
     {
-        [FunctionName("UpdateDaysRemaining")]
-        public static async Task RunAsync(
-            [TimerTrigger("0 0 6-23 * * *"
-            #if DEBUG
-                , RunOnStartup =true
-	        #endif
-            )] TimerInfo myTimer,
-            ILogger log)
-        {
-            log.LogInformation("Function code running");
-            await ProcessTodoist.ProcessTodoistAsync(log);
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-        }
+        log.LogInformation("Function code running");
+        await ProcessTodoist.ProcessTodoistAsync(log);
+        log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
     }
 }
