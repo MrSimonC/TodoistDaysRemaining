@@ -16,7 +16,7 @@ public class ProcessTodoist
     public ProcessTodoist()
     {
         TodoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
-        string completePastItemsString = Environment.GetEnvironmentVariable("COMPLETEPASTITEMS") ?? throw new NullReferenceException("Missing COMPLETEPASTITEMS environment variable");
+        string completePastItemsString = Environment.GetEnvironmentVariable("COMPLETE_PAST_ITEMS") ?? throw new NullReferenceException("Missing COMPLETE_PAST_ITEMS environment variable");
         if (!bool.TryParse(completePastItemsString, out CompletePastItems))
         {
             throw new ArgumentException(nameof(completePastItemsString));
