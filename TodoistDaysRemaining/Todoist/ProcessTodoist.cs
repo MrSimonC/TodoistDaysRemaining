@@ -116,7 +116,7 @@ public class ProcessTodoist
             .Where(p => todoistProjectsToTraverse.Contains(p.Name.ToLower()))
             .Select(p => p.Id)
             .ToList();
-        log.LogInformation($"Found count of projects from todoist: {tdiProjectIds.Count()}");
+        log.LogInformation($"Found count of projects from todoist: {tdiProjectIds.Count}");
         return tdiProjectIds;
     }
 
