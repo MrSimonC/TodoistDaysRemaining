@@ -18,7 +18,7 @@ public class ProcessTodoist
     {
         TodoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
         CompletePastItems = GetBoolFromEnvVar("COMPLETE_PAST_ITEMS");
-        ForceWrite = GetBoolFromEnvVar("FORCE_WRITE_ONCE");
+        ForceWrite = GetBoolFromEnvVar("FORCE_WRITE");
     }
 
     public async Task ProcessTodoistAsync(ILogger log)
