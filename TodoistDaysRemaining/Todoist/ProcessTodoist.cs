@@ -12,19 +12,18 @@ public class ProcessTodoist
 {
     private readonly bool CompletePastItems;
     private readonly string TodoistAPIKey = string.Empty;
+    private readonly bool ForceWrite;
 
     public ProcessTodoist()
     {
         TodoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
         CompletePastItems = GetBoolFromEnvVar("COMPLETE_PAST_ITEMS");
+        ForceWrite = GetBoolFromEnvVar("FORCE_WRITE_ONCE");
     }
 
     public async Task ProcessTodoistAsync(ILogger log)
     {
         ITodoistClient client = new TodoistClient(TodoistAPIKey);
-        // Force writing to all todoist entries (change from true to false directly in Portal > Configuration since SetEnvironmentVariable won't work in Azure Functions
-        bool forceWrite = GetBoolFromEnvVar("FORCE_WRITE_ONCE");
-
         List<string> todoistProjectsToTraverse = GetListOfProjectsFromConfig(log);
         List<ComplexId> todoistProjectIds = await GetTodoistProjectIds(log, todoistProjectsToTraverse, client);
         List<Item> todoistItemsToProcess = await GetTodoistProjectItems(log, client, todoistProjectIds);
@@ -63,7 +62,7 @@ public class ProcessTodoist
                         continue;
                     }
                     log.LogInformation($"Checking existing entries for changes. Comparing existing {existingDays} days to calculated {days} days");
-                    if ((existingDays == days) && !forceWrite)
+                    if ((existingDays == days) && !ForceWrite)
                     {
                         log.LogInformation($"Skipping entry as days don't need update. Entry is: {item.Content}");
                         continue;
