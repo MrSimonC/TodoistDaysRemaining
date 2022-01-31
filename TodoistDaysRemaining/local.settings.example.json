@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "TODOIST_APIKEY": "",
+    "FORCE_WRITE": "false",
+    "PROJECTS_DUE_DATE": "future",
+    "PROJECTS_COMPLETE_PAST_EVENTS": "future, pretend, kitchen tasks, kitchen food"
+  }
+}
