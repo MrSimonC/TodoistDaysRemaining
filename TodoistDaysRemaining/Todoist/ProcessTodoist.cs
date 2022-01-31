@@ -13,12 +13,14 @@ public class ProcessTodoist
     private readonly bool CompletePastItems;
     private readonly string TodoistAPIKey = string.Empty;
     private readonly bool ForceWrite;
+    private readonly string ProjectList = string.Empty;
 
     public ProcessTodoist()
     {
         TodoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
         CompletePastItems = GetBoolFromEnvVar("COMPLETE_PAST_ITEMS");
         ForceWrite = GetBoolFromEnvVar("FORCE_WRITE");
+        ProjectList =  Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
     }
 
     public async Task ProcessTodoistAsync(ILogger log)
@@ -120,10 +122,9 @@ public class ProcessTodoist
         return tdiProjectIds;
     }
 
-    private static List<string> GetListOfProjectsFromConfig(ILogger log)
+    private List<string> GetListOfProjectsFromConfig(ILogger log)
     {
-        string projectsEnvVar = Environment.GetEnvironmentVariable("PROJECTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
-        List<string> todoistProjectsToTraverse = projectsEnvVar
+        List<string> todoistProjectsToTraverse = ProjectList
             .Split(",")
             .Where(p => !string.IsNullOrEmpty(p))
             .Select(p => p.Trim().ToLowerInvariant())
