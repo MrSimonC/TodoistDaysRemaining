@@ -21,7 +21,8 @@ It will append the full days (counting today) and/or the work days remaining too
 Configuration Variables, Required:
 
 * `TODOIST_APIKEY` = your todoist api key from within todoist settings
-* `PROJECTS` = comma delimited list of todoist project names you want to process e.g. `"future, birthdays"` - which would traverse two separate todoist projects: Future project, and Birthdays project.
+* `PROJECTS_DUE_DATE` = comma delimited list of todoist project names you want to add countdown days to e.g. `"future, birthdays"` - which would traverse two separate todoist projects: Future project, and Birthdays project.
+* `PROJECTS_COMPLETE_PAST_EVENTS` = comma delimited list of todoist project names you want to complete tasks of if they fall before today
 * `FORCE_WRITE` = always write to each item, even if the entry has correct days (useful for when days were incorrectly written/code has been updated)
 
 ## Screenshot
