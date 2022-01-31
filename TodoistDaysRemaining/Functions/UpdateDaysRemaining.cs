@@ -17,7 +17,6 @@ public class UpdateDaysRemaining
         log.LogInformation("Function {name} code running", nameof(UpdateDaysRemaining));
 
         string todoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
-        bool completePastItems = GetBoolFromEnvVar("COMPLETE_PAST_ITEMS");
         bool forceWrite = GetBoolFromEnvVar("FORCE_WRITE");
         string projectsDueDate = Environment.GetEnvironmentVariable("PROJECTS_DUE_DATE") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
         string projectsCompletePastEvents = Environment.GetEnvironmentVariable("PROJECTS_COMPLETE_PAST_EVENTS") ?? throw new NullReferenceException("Missing PROJECTS environment variable");
