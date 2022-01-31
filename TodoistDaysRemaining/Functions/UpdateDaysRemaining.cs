@@ -24,6 +24,7 @@ public class UpdateDaysRemaining
         var todoistShared = new TodoistSharedLogic(todoistAPIKey, log);
         await todoistShared.CompletePastEntriesAsync(projectsCompletePastEvents);
         await todoistShared.AddDueDaysAsync(projectsDueDate, forceWrite);
+
         log.LogInformation("Function {name} finished at {date}", nameof(UpdateDaysRemaining), DateTime.Now);
     }
 }
