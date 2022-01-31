@@ -1,22 +1,19 @@
 namespace TodoistFunctions.Functions;
 
-namespace TodoistDaysRemaining.Functions
+public class UpdateDaysRemaining
 {
-    public class UpdateDaysRemaining
-    {
-        [FunctionName("UpdateDaysRemaining")]
-        public async Task RunAsync(
-            [TimerTrigger("0 0 6-23 * * *"
+    [FunctionName("UpdateDaysRemaining")]
+    public async Task RunAsync(
+        [TimerTrigger("0 0 6-23 * * *"
             #if DEBUG
                 , RunOnStartup =true
 	        #endif
             )] TimerInfo myTimer,
-            ILogger log)
-        {
-            log.LogInformation("Function code running");
-            var process = new ProcessTodoist();
-            await process.ProcessTodoistAsync(log);
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-        }
+        ILogger log)
+    {
+        log.LogInformation("Function code running");
+        var process = new ProcessTodoist();
+        await process.ProcessTodoistAsync(log);
+        log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
     }
 }
