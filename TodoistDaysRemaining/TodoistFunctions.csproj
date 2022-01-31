@@ -11,6 +11,9 @@
 		<PackageReference Include="Todoist.Net" Version="2.2.2" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\TodoistShared\TodoistShared.csproj" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Update="host.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

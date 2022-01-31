@@ -1,14 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31129.286
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoistFunctions", "TodoistDaysRemaining\TodoistFunctions.csproj", "{AA7836A8-B8A3-491E-9BA6-466CD941CFB5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D78F6CA4-F992-478C-B827-4AC1751E5558}"
-	ProjectSection(SolutionItems) = preProject
-		TodoistDaysRemaining\readme.md = TodoistDaysRemaining\readme.md
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoistShared", "TodoistShared\TodoistShared.csproj", "{88B41B74-E4E7-4633-A974-56F88E931A38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +17,10 @@ Global
 		{AA7836A8-B8A3-491E-9BA6-466CD941CFB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA7836A8-B8A3-491E-9BA6-466CD941CFB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA7836A8-B8A3-491E-9BA6-466CD941CFB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88B41B74-E4E7-4633-A974-56F88E931A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88B41B74-E4E7-4633-A974-56F88E931A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88B41B74-E4E7-4633-A974-56F88E931A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88B41B74-E4E7-4633-A974-56F88E931A38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
