@@ -34,7 +34,7 @@ public class ProcessTodoist
         string regex = @"\ +\[+(\d+)\/*\d*\ days\ remaining\]+";
         foreach (Item item in todoistItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
         {
-            if (item.DueDate.Date!.Value.ToUniversalTime() < DateTime.UtcNow.Date)
+            if (item.DueDate.Date!.Value.ToUniversalTime().Date < DateTime.UtcNow.Date)
             {
                 log.LogInformation($"Item: {item.Content} is in the past with date {item.DueDate.Date.Value:dd-MM-yyyy HH:mm}");
                 if (CompletePastItems)
