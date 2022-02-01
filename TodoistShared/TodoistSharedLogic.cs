@@ -86,12 +86,19 @@ public partial class TodoistSharedLogic
         }
     }
 
+    /// <summary>
+    /// Complete any date yesterday or before, or today if it has a time (not midnight) which has passed.
+    /// </summary>
+    /// <param name="projects">comma delimited string of projects to traverse</param>
+    /// <returns>A tasl</returns>
     public async Task CompletePastEntriesAsync(string projects)
     {
         List<Item> todoistItemsToProcess = await GetItemsFromProjectList(projects, client, log);
         foreach (Item item in todoistItemsToProcess.Where(i => i?.DueDate?.Date.HasValue ?? false))
         {
-            if (item.DueDate.Date!.Value.ToUniversalTime().Date < DateTime.UtcNow.Date)
+            var dueDateUtc = item.DueDate.Date!.Value.ToUniversalTime();
+            if (dueDateUtc.Date < DateTime.UtcNow.Date
+                || (dueDateUtc < DateTime.UtcNow && dueDateUtc.TimeOfDay != new TimeSpan()))
             {
                 LogInfo($"Item is in the past with date {item.DueDate.Date.Value:G}", item.Content);
 #if !DEBUG
