@@ -8,7 +8,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.20.0" />
 		<PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
-		<PackageReference Include="Todoist.Net" Version="2.2.2" />
+		<PackageReference Include="Todoist.Net" Version="3.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\TodoistShared\TodoistShared.csproj" />
