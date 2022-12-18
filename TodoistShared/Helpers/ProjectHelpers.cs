@@ -7,7 +7,7 @@ public static partial class ProjectHelpers
     public static async Task<List<Item>> GetTodoistProjectItems(List<ComplexId> tdiProjectIds, ITodoistClient client, ILogger log)
     {
         IEnumerable<Item>? tdiAllItems = await client.Items.GetAsync();
-        var tdiItemsToProcess = tdiAllItems.Where(i => tdiProjectIds.Contains(i.ProjectId ?? 0)).ToList();
+        var tdiItemsToProcess = tdiAllItems.Where(i => i.ProjectId is not null && tdiProjectIds.Contains(i.ProjectId.Value)).ToList();
         log.LogInformation("Found {count} items to process", tdiItemsToProcess.Count);
         return tdiItemsToProcess;
     }
