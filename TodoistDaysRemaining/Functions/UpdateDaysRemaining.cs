@@ -12,8 +12,9 @@ public class UpdateDaysRemaining
                 , RunOnStartup =true
 	        #endif
             )] TimerInfo myTimer,
-        ILogger log)
+            FunctionContext executionContext)
     {
+        var log = executionContext.GetLogger("UpdateDaysRemaining");
         log.LogInformation("Function {name} code running", nameof(UpdateDaysRemaining));
 
         string todoistAPIKey = Environment.GetEnvironmentVariable("TODOIST_APIKEY") ?? throw new NullReferenceException("Missing TODOIST_APIKEY environment variable");
