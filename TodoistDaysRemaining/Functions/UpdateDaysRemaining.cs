@@ -5,7 +5,7 @@ namespace TodoistFunctions.Functions;
 
 public class UpdateDaysRemaining
 {
-    [FunctionName("UpdateDaysRemaining")]
+    [Function("UpdateDaysRemaining")]
     public async Task RunAsync(
         [TimerTrigger("0 0 6-23 * * *"
             #if DEBUG
