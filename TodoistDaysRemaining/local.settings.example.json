@@ -2,7 +2,7 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "TODOIST_APIKEY": "",
     "FORCE_WRITE": "false",
     "PROJECTS_DUE_DATE": "future",

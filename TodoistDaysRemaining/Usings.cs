@@ -1,2 +1,2 @@
-﻿global using Microsoft.Azure.WebJobs;
+﻿global using Microsoft.Azure.Functions.Worker;
 global using Microsoft.Extensions.Logging;
