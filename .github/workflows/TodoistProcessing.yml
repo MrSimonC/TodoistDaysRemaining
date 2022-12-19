@@ -47,5 +47,5 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.TodoistProcessing_EC71 }}
+        publish-profile: ${{ secrets.TodoistProcessing_35EE }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
