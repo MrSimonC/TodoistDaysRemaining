@@ -1,5 +1,7 @@
 # Todoist Days Remaining
 
+> ⚠️ Project moved to [this repo](https://github.com/MrSimonC/TodoistDaysRemainingACA). Code has been re-engineered into an Azure Container App.
+
 Todoist comes with a free and Pro plan, however, neither of which show the **days remaining** directly within a created task. On the mac desktop app, one can hover the mouse over a task to see days remaining, but nothing exists for mobile.
 
 This project aims to set up an Azure Function, which:
